@@ -1,0 +1,190 @@
+---
+title: "Ggplot2 Tutorial"
+author: "Rick"
+date: "01/02/2021"
+output: 
+  html_document:
+  code_folding: "show"
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+
+```{r load, Libraries}
+#Install Tidyverse package
+#Install ggthemeassist package
+library(tidyverse)
+library(ggThemeAssist)
+```
+
+We will explore the "ggplot2" package of the tidyverse for data visualisation purposes. The "ggplot2" packages involve the following three mandatory components:
+
+1) Data
+2) And aesthetic mapping
+3) Geoms (aka objects)
+
+The following components can also be optionally added:
+
+4) Stats (aka transformations)
+5) Scales
+6) Facets
+7) Coordinate systems
+8) Position adjustments
+9) Themes
+
+Please note that the code in this tutorial was adapted from chapters 3 of the book "R for Data Science" by Hadley Wickham and Garrett Grolemund. The full book can be found at: https://r4ds.had.co.nz/
+
+A good cheatsheet for ggplot2 functions can be found at: https://rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf
+
+The tutorial was originally delivered by Richard on Data and more information can be found at https://www.youtube.com/watch?v=2qPQhXnbk3o
+
+Let's create an extremely simple scatterplot. We will use the function 'ggplot()' to do this. 
+The format of any ggplot function is this, plus another function to add objects.
+The objects in the case of a scatterplot are points. The function we add to it is 'geom_point'. 
+These functions rely on a function on the inside called 'aes()'.
+The data and aesthetic mapping components can be added to either the 'ggplot()' or geom function.
+
+```{r graph 1}
+ggplot(data = mpg) +
+  geom_point(aes(x = displ, y = hwy))
+```
+<br>
+
+This is one of the most basic graphs one can make using the ggplot2 frameowork. Next, let's add soem colour.
+"geom_point" understands the following aesthetics: x, y, alpha, colour, fill, group, shapre, size and stroke (see help documentation).
+Let's map the colour argeument to the variable 'class' from mpg.
+
+```{r graph 2}
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy, color = class))
+```
+<br>
+
+This is not the only way to colour objects. Including the color arguement inside the 'aes()' function can map colours to a choice of variable. However, we can also specify colours manually, by specifying colour outside the 'aes()' function. We will also illustrate the 'size', or arguement. 
+
+```{r graph 3}
+ggplot(mpg) +
+  geom_point(aes(x = displ, y = hwy, size = class), color = "blue")
+```
+<br>
+
+Lastly, let's examine other objects we can plot using 'ggplot()'. We will create a bar chart using the function 'geom_bar()'. 
+
+```{r graph 4}
+ggplot(mpg) +
+  geom_bar(aes(x = class))
+```
+
+<br>
+
+With the 'geom_bar()' function we have a great use-case for a stat transformation. The following code can be used to transform these counts to proportions. 
+
+```{r graph 5}
+ggplot(mpg) +
+  geom_bar(aes(x = class, y = stat(prop), group = 1))
+```
+
+<br>
+
+Next, let's create a histogram with the 'geom_histogram()' function.
+
+```{r graph 6}
+ggplot(mpg) +
+  geom_histogram(aes(x = hwy))
+```
+
+<br>
+
+The 'geom_histogram()' function accepts the arguement "binwidth", and has two key arguements for color: fill (this controls the overall color), and color (this controls the border).
+Let's fill these in:
+
+```{r graph 7}
+ggplot(mpg) +
+  geom_histogram(aes(x = hwy), binwidth = 5, fill = "navy", color = "gold")
+```
+
+<br>
+
+'geom_histogram' provides a great example to modify the scale. Notice in this example the x axis is broken up in units of 10 and does not begin at 0. 
+We can modify this with the function 'scale_x_continuous()', as well as the y-axis, with the function 'scale_y_continuous()'. There are three arguements we will feed this function: "breaks", "limits" and "expand". 
+"breaks" will define the breaks on an axis, "limits" will define the end of an axis, and the "expand" arguement can be used to start the axis at 0 by using "expand = c(0,0)". 
+
+```{r graph 8}
+ggplot(mpg) +
+  geom_histogram(aes(x = hwy), binwidth = 5, fill = "navy", color = "gold") +
+  scale_x_continuous(breaks = seq(0, 45, 5), limits = c(0, 50), expand = c(0,0)) +
+  scale_y_continuous(breaks = seq(0, 90, 10), limits = c(0, 90), expand = c(0,0))
+```
+
+<br>
+
+Next, we will create boxplots.
+
+```{r graph 9}
+p <- ggplot(mpg) +
+  geom_boxplot(aes(x = class, y = cty, fill = class))
+p
+```
+
+<br>
+
+One helpful tool for breaking multiple graphs down by another variable is the facet. We can do this with the 'facet_wrap()'. 
+Notice in this document the use of the fig.height and fig.width options.
+Key arguements to 'facet_wrap()' are 'facets', 'nrow' and 'ncol'. 
+
+```{r graph 10, fig.height = 8, fig.width = 12}
+ggplot(mpg) +
+  geom_boxplot(aes(x = class, y = cty, fill = class)) +
+  facet_wrap(facets = ~cyl, nrow = 2, ncol = 2)
+```
+
+<br>
+
+Other coordinate systems can be applied to graphs created in ggplot2. One example is 'coord_polar()', which uses polar coordinates. Most of these are quite rare. Probably the most common one is 'coord_flip()', which will filp the x and y axis. Let's also illustrate the 'labs()' function, which can be used to change labels. 
+
+```{r graph 11}
+ggplot(mpg) +
+  geom_bar(aes(x = class, fill = factor(cyl))) +
+  labs(title = "cylinders by class", fill = "cylinders") +
+  coord_flip()
+```
+
+<br>
+
+These bars are stacked on top of one another, due to the cyl variable being mapped to the "fill" arguement. There are various position adjustments that can be used. Again, most of these are not very common, but a common one is the arguement "position = dodge", which will put items side by side. See this example:
+
+```{r graph 12}
+ggplot(mpg) +
+  geom_bar(aes(x = class, fill = factor(cyl)), position = "dodge") +
+  labs(title = "Cylinders by class", fill = "cylinders") +
+  coord_flip()
+```
+
+<br>
+
+Lastly, we can alter the overall "theme" of our plot. I recommend using the ggThemeAssist package, because this will make this incredibly easy, with an interface that will automatically produce reproducable code. 
+This can be used by hughlighting a ggplot object and navigating to Addins > ggplot Theme Assistant.
+We'll make the following changes. Elimination of the panl gridlines, eliminating axis ticks, adding a title called "Boxplot Example", making it bigger and putting it in bold and adjusting it to the centre.
+
+```{r graph 13}
+
+p + theme(axis.ticks = element_line(linetype = "blank"), 
+    panel.grid.major = element_line(linetype = "blank"), 
+    panel.grid.minor = element_line(linetype = "blank"), 
+    plot.title = element_text(size = 14, 
+        face = "bold", hjust = 0.5)) +labs(title = "Boxplot Example")
+
+#p + theme(axis.ticks = element_line(linetype = "blank"),
+#         panel.grid.major = element_line(linetype = "blank"),
+#         panel.grid.minor = element_line(linetype = "blank"),
+#         plot.title = element_text(size = 14,
+#             face = "bold", hjust = 0.5)) +labs(title = 'Boxplot                      Example")
+#(But instead of trying to remember all of the above themes, instead just use the ggThemeAssist menu, which can be found in the 'Addins' dropdown menu at the top of the page)
+library(ggThemeAssist)
+```
+
+<br>
+
+There are many example fo things that can be donw with ggplot2. It is an amazingly powerful and flexible package and it is worth getting aquainted with the cheat sheet. 
